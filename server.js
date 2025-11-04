@@ -11,6 +11,7 @@ const { globalLimiter } = require('./core/ConcurrencyLimiter')
 const platformFactory = require('./platforms/PlatformFactory')
 const NeteasePlatform = require('./platforms/netease/NeteasePlatform')
 const QQMusicPlatform = require('./platforms/qqmusic/QQMusicPlatform')
+const KuGouPlatform = require('./platforms/kugou/KuGouPlatform')
 
 /**
  * 多平台音乐API服务器
@@ -59,6 +60,11 @@ class MultiPlatformServer {
       // 注册QQ音乐平台
       platformFactory.register('qqmusic', QQMusicPlatform, {
         name: 'qqmusic'
+      })
+
+      // 注册酷狗音乐平台
+      platformFactory.register('kugou', KuGouPlatform, {
+        name: 'kugou'
       })
 
       // 初始化所有平台
@@ -160,14 +166,26 @@ class MultiPlatformServer {
     try {
       // 将 Cookie 中的认证参数注入到 query 中（优先使用 Cookie）
       if (req.cookies) {
+        // 网易云音乐 Cookie
         if (req.cookies.MUSIC_U && !req.query.MUSIC_U) {
           req.query.MUSIC_U = req.cookies.MUSIC_U
         }
+        // QQ音乐 Cookie
         if (req.cookies.uin && !req.query.uin) {
           req.query.uin = req.cookies.uin
         }
         if (req.cookies.qm_keyst && !req.query.qm_keyst) {
           req.query.qm_keyst = req.cookies.qm_keyst
+        }
+        // 酷狗音乐 Cookie
+        if (req.cookies.token && !req.query.token) {
+          req.query.token = req.cookies.token
+        }
+        if (req.cookies.userid && !req.query.userid) {
+          req.query.userid = req.cookies.userid
+        }
+        if (req.cookies.dfid && !req.query.dfid) {
+          req.query.dfid = req.cookies.dfid
         }
       }
 

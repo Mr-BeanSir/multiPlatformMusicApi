@@ -2,7 +2,7 @@
 
 # Multi-Platform Music API
 
-> 🎵 统一的多平台音乐API服务，支持网易云音乐、QQ音乐等平台
+> 🎵 统一的多平台音乐API服务，支持网易云音乐、QQ音乐、酷狗音乐等平台
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -28,6 +28,7 @@
 |------|:-------:|----------|
 | 网易云音乐 | 84+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
 | QQ音乐 | 69+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
+| 酷狗音乐 | 151+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、视频、用户、FM等 |
 
 ---
 
@@ -117,6 +118,12 @@ curl "http://localhost:3000/song/detail?ids=347230&platform=netease"
 # 获取榜单
 curl "http://localhost:3000/toplist?platform=qqmusic"
 
+# 酷狗音乐搜索
+curl "http://localhost:3000/search?keywords=周杰伦&platform=kugou"
+
+# 酷狗获取歌曲播放地址
+curl "http://localhost:3000/song/url?hash=xxxxx&platform=kugou"
+
 # 检查服务状态
 curl "http://localhost:3000/status"
 ```
@@ -145,6 +152,17 @@ curl -H "Cookie: uin=your_uin; qm_keyst=your_keyst" \
 
 # Query 方式
 curl "http://localhost:3000/user/detail?platform=qqmusic&uin=your_uin&qm_keyst=your_keyst"
+```
+
+#### 酷狗音乐
+
+```bash
+# Cookie 方式
+curl -H "Cookie: token=your_token; userid=your_userid; dfid=your_dfid" \
+  "http://localhost:3000/user/detail?platform=kugou"
+
+# Query 方式
+curl "http://localhost:3000/user/detail?platform=kugou&token=your_token&userid=your_userid"
 ```
 
 ---
@@ -228,9 +246,14 @@ multiPlatformMusicApi/
 │   ├── netease/          # 网易云音乐
 │   │   ├── NeteasePlatform.js
 │   │   └── module/       # API模块（84个）
-│   └── qqmusic/          # QQ音乐
-│       ├── QQMusicPlatform.js
-│       └── module/       # API模块（69个）
+│   ├── qqmusic/          # QQ音乐
+│   │   ├── QQMusicPlatform.js
+│   │   └── module/       # API模块（69个）
+│   └── kugou/            # 酷狗音乐
+│       ├── KuGouPlatform.js
+│       ├── config.js
+│       ├── util/         # 工具函数（加密、签名等）
+│       └── module/       # API模块（151个）
 ├── tests/                # 测试文件
 ├── package.json
 ├── Dockerfile
@@ -267,7 +290,9 @@ npm run test:watch
 
 - [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 
-- [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced) 
+- [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced)
+
+- [KuGouMusicApi](https://github.com/xlh001/KuGouMusicApi) 
 
 ---
 
