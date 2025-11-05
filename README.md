@@ -4,9 +4,9 @@
 
 > 🎵 统一的多平台音乐API服务，支持网易云音乐、QQ音乐、酷狗音乐等平台
 
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](DOCKER.md)
+[![GitHub](https://img.shields.io/badge/GitHub-Mr--BeanSir-blue?logo=github)](https://github.com/Mr-BeanSir/multiPlatformMusicApi)
 
 </div>
 
@@ -26,9 +26,9 @@
 
 | 平台 | API数量 | 支持功能 |
 |------|:-------:|----------|
-| 网易云音乐 | 84+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
-| QQ音乐 | 69+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
-| 酷狗音乐 | 151+ | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、视频、用户、FM等 |
+| 网易云音乐 | 362 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
+| QQ音乐 | 69 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
+| 酷狗音乐 | 151 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、视频、用户、FM等 |
 
 ---
 
@@ -43,7 +43,7 @@
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/tlyanyu/multiPlatformMusicApi.git
+git clone https://github.com/Mr-BeanSir/multiPlatformMusicApi.git
 cd multiPlatformMusicApi
 
 # 2. 安装依赖
@@ -58,75 +58,59 @@ curl "http://localhost:3000/status"
 
 ### Docker 部署
 
-**快速运行**（使用预构建镜像）：
+**本地构建方式**（推荐）：
 
 ```bash
-# 
-docker run -d \
-  --name music-api \
-  -p 3000:3000 \
-  -e CORS_ALLOW_ORIGIN=https://yourdomain.com \
-  --restart unless-stopped \
-  ghcr.io/tlyanyu/multiplatformmusicapi:latest
-```
-
-**使用 Docker Compose**（推荐）：
-
-```bash
-# 默认启动（使用预构建镜像，端口 3000）
-HOST_PORT=3000 docker compose up -d
-```
-
-**本地构建方式**（适用于镜像未发布或需要自定义修改的场景）：
-
-编辑 `docker-compose.yml`，将预构建镜像注释掉，启用本地构建：
-```yaml
-music-api:
-  # image: ghcr.io/tlyanyu/multiplatformmusicapi:latest  # 注释这行
-  build:  # 取消这三行注释
-    context: .
-    dockerfile: Dockerfile
-```
-
-然后启动并构建：
-```bash
+# 启动并构建
 docker compose up -d --build
 ```
 
 > **注意**：首次本地构建需要 3-5 分钟（下载依赖）
 
+**使用 Docker Compose**：
+
+```bash
+# 默认启动（端口 3000）
+HOST_PORT=3000 docker compose up -d
+```
+
+编辑 `docker-compose.yml` 自定义配置：
+```yaml
+music-api:
+  build:
+    context: .
+    dockerfile: Dockerfile
+  ports:
+    - "${HOST_PORT:-3000}:3000"
+  environment:
+    - CORS_ALLOW_ORIGIN=*
+```
+
 ---
 
 ## 📖 API 文档
+
+本项目提供了完整的 API 文档，包含所有平台的详细接口说明：
+
+### Wiki 文档
+
+访问 [Wiki 主页](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki) 查看完整文档。
+
+Wiki 文档包括：
+- 📋 各平台 API 完整列表
+  - [网易云音乐 API (362个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/Netease-API-Overview)
+  - [QQ音乐 API (69个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/QQMusic-API-Overview)
+  - [酷狗音乐 API (151个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/KuGou-API-Overview)
+- 🔍 详细的接口参数说明
+- 💡 使用示例和最佳实践
+- 🔐 认证和授权指南
 
 ### 接口标准
 
 本项目基于 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 进行自定义及平台扩展。
 
-- **接口文档**: https://neteasecloudmusicapi.js.org/
-- **重要**: 所有请求参数需要添加 `platform` 参数（如 `platform=netease` 或 `platform=qqmusic`）
-
-### API 使用示例
-
-```bash
-# 搜索歌曲
-curl "http://localhost:3000/search?keywords=周杰伦&platform=netease"
-
-# 获取歌曲详情
-curl "http://localhost:3000/song/detail?ids=347230&platform=netease"
-
-# 获取榜单
-curl "http://localhost:3000/toplist?platform=qqmusic"
-
-# 酷狗音乐搜索
-curl "http://localhost:3000/search?keywords=周杰伦&platform=kugou"
-
-# 酷狗获取歌曲播放地址
-curl "http://localhost:3000/song/url?hash=xxxxx&platform=kugou"
-
-# 检查服务状态
-curl "http://localhost:3000/status"
-```
+- **重要**: 所有请求参数需要添加 `platform` 参数（如 `platform=netease`、`platform=qqmusic` 或 `platform=kugou`）
+- **参考文档**: https://neteasecloudmusicapi.js.org/
 
 ### 认证说明
 
@@ -245,7 +229,7 @@ multiPlatformMusicApi/
 │   │   └── BasePlatform.js   # 平台基类
 │   ├── netease/          # 网易云音乐
 │   │   ├── NeteasePlatform.js
-│   │   └── module/       # API模块（84个）
+│   │   └── module/       # API模块（362个）
 │   ├── qqmusic/          # QQ音乐
 │   │   ├── QQMusicPlatform.js
 │   │   └── module/       # API模块（69个）
@@ -286,12 +270,11 @@ npm run test:watch
 
 ## 🙏 致谢
 
-特此感谢为本项目带来灵感的项目
+站在巨人的肩膀上前进,感谢下面项目.
 
+- [multiPlatformMusicApi by tlyanyu](https://github.com/tlyanyu/multiPlatformMusicApi) - 原始项目
 - [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
-
 - [NeteaseCloudMusicApiEnhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced)
-
 - [KuGouMusicApi](https://github.com/xlh001/KuGouMusicApi) 
 
 ---
@@ -318,10 +301,10 @@ npm run test:watch
 
 <div align="center">
 
-### Made with ❤️ by [tlyanyu](https://github.com/tlyanyu)
+### Made with ❤️ by [Mr-BeanSir](https://github.com/Mr-BeanSir)
 
 如果觉得项目不错，请给个 ⭐ **Star** 支持一下！
 
-[GitHub](https://github.com/tlyanyu/multiPlatformMusicApi) • [Issues](https://github.com/tlyanyu/multiPlatformMusicApi/issues) • [文档](https://neteasecloudmusicapi.js.org/)
+[GitHub](https://github.com/Mr-BeanSir/multiPlatformMusicApi) • [Issues](https://github.com/Mr-BeanSir/multiPlatformMusicApi/issues) • [Wiki文档](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki)
 
 </div>
