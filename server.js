@@ -12,6 +12,7 @@ const platformFactory = require('./platforms/PlatformFactory')
 const NeteasePlatform = require('./platforms/netease/NeteasePlatform')
 const QQMusicPlatform = require('./platforms/qqmusic/QQMusicPlatform')
 const KuGouPlatform = require('./platforms/kugou/KuGouPlatform')
+const BilibiliPlatform = require('./platforms/bilibili/BilibiliPlatform')
 
 /**
  * 多平台音乐API服务器
@@ -65,6 +66,11 @@ class MultiPlatformServer {
       // 注册酷狗音乐平台
       platformFactory.register('kugou', KuGouPlatform, {
         name: 'kugou'
+      })
+
+      // 注册Bilibili平台
+      platformFactory.register('bilibili', BilibiliPlatform, {
+        name: 'bilibili'
       })
 
       // 初始化所有平台
@@ -186,6 +192,10 @@ class MultiPlatformServer {
         }
         if (req.cookies.dfid && !req.query.dfid) {
           req.query.dfid = req.cookies.dfid
+        }
+        // Bilibili Cookie
+        if (req.cookies.SESSDATA && !req.query.SESSDATA) {
+          req.query.SESSDATA = req.cookies.SESSDATA
         }
       }
 
