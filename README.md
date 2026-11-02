@@ -10,6 +10,8 @@
 
 </div>
 
+已有更好的项目, 此项目停更: https://github.com/CharlesPikachu/musicdl
+
 ---
 
 ## ✨ 特性
