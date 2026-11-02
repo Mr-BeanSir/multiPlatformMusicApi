@@ -2,7 +2,7 @@
 
 # Multi-Platform Music API
 
-> 🎵 统一的多平台音乐API服务，支持网易云音乐、QQ音乐、酷狗音乐等平台
+> 🎵 统一的多平台音乐API服务，支持网易云音乐、QQ音乐、酷狗音乐、Bilibili 等平台
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -29,6 +29,7 @@
 | 网易云音乐 | 362 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
 | QQ音乐 | 69 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、MV、用户等 |
 | 酷狗音乐 | 151 | 搜索、歌曲、专辑、歌手、榜单、歌词、评论、视频、用户、FM等 |
+| Bilibili | 3 | 搜索建议、综合搜索、视频/音频播放地址 |
 
 ---
 
@@ -101,6 +102,7 @@ Wiki 文档包括：
   - [网易云音乐 API (362个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/Netease-API-Overview)
   - [QQ音乐 API (69个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/QQMusic-API-Overview)
   - [酷狗音乐 API (151个接口)](https://github.com/Mr-BeanSir/multiPlatformMusicApi/wiki/KuGou-API-Overview)
+  - [Bilibili 平台接口说明](platforms/bilibili/README.md)
 - 🔍 详细的接口参数说明
 - 💡 使用示例和最佳实践
 - 🔐 认证和授权指南
@@ -109,7 +111,7 @@ Wiki 文档包括：
 
 本项目基于 [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi) 进行自定义及平台扩展。
 
-- **重要**: 所有请求参数需要添加 `platform` 参数（如 `platform=netease`、`platform=qqmusic` 或 `platform=kugou`）
+- **重要**: 所有请求参数需要添加 `platform` 参数（如 `platform=netease`、`platform=qqmusic`、`platform=kugou` 或 `platform=bilibili`）
 - **参考文档**: https://neteasecloudmusicapi.js.org/
 
 ### 认证说明
@@ -233,11 +235,16 @@ multiPlatformMusicApi/
 │   ├── qqmusic/          # QQ音乐
 │   │   ├── QQMusicPlatform.js
 │   │   └── module/       # API模块（69个）
-│   └── kugou/            # 酷狗音乐
-│       ├── KuGouPlatform.js
+│   ├── kugou/            # 酷狗音乐
+│   │   ├── KuGouPlatform.js
+│   │   ├── config.js
+│   │   ├── util/         # 工具函数（加密、签名等）
+│   │   └── module/       # API模块（151个）
+│   └── bilibili/         # Bilibili
+│       ├── BilibiliPlatform.js
 │       ├── config.js
-│       ├── util/         # 工具函数（加密、签名等）
-│       └── module/       # API模块（151个）
+│       ├── README.md
+│       └── module/       # API模块（3个）
 ├── tests/                # 测试文件
 ├── package.json
 ├── Dockerfile
