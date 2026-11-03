@@ -8,8 +8,8 @@
 
   会话生命周期：
     - 硬过期：130 秒（接近官方 2 分钟 + 冗余）
-    - 无轮询过期：15 秒（最后一次轮询距今 > 15s 即销毁）
-    - 惰性 GC：每次 start/poll 先清理过期/空闲会话（可选附加周期 GC）
+    - 会话有效期：由二维码硬过期时间统一控制
+    - 惰性 GC：每次 start/poll 先清理过期会话（可选附加周期 GC）
 
   依赖安装：
     npm i got@11 tough-cookie
@@ -135,10 +135,9 @@ function uuidUpper() {
   return v.toUpperCase();
 }
 
-// ===== 会话管理（两步策略，130s 硬过期 + 15s 无轮询过期）=====
+// ===== 会话管理（两步策略，130s 硬过期）=====
 const store = new Map();
 const QR_HARD_TTL = 130_000;  // 130s 硬过期
-const IDLE_TTL = 15_000;      // 15s 无轮询过期
 const GC_INTERVAL_MS = 30_000;
 
 let lastGc = 0;
@@ -149,10 +148,9 @@ function gcSessions() {
 
   for (const [k, s] of store) {
     const hardExpired = now > s.hardExpireAt;
-    const idleExpired = now - (s.lastPollAt || s.createdAt) > IDLE_TTL;
     const terminal = s.status === 'done' || s.status === 'expired' || s.status === 'error';
 
-    if (hardExpired || idleExpired || terminal) {
+    if (hardExpired || terminal) {
       store.delete(k);
     }
   }
@@ -200,7 +198,6 @@ async function startLogin() {
     token,
     jar: new CookieJar(undefined, { looseMode: true }),
     createdAt: now,
-    lastPollAt: now,
     hardExpireAt: now + QR_HARD_TTL,
     status: 'init', // init | waiting | confirming | authed | done | expired | error
     lock: false,
@@ -270,17 +267,6 @@ async function pollLogin(token) {
     safeDelete(token);
     return { status: 'expired', msg: session.msg };
   }
-
-  // 无轮询过期（最后一次轮询距今 > 15s）
-  if (now - (session.lastPollAt || session.createdAt) > IDLE_TTL) {
-    session.status = 'expired';
-    session.msg = '会话已空闲过久';
-    safeDelete(token);
-    return { status: 'expired', msg: session.msg };
-  }
-
-  // 通过过期检查，刷新 lastPollAt
-  session.lastPollAt = now;
 
   if (!session.ptqrtoken) {
     safeDelete(token);
