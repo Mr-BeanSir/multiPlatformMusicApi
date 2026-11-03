@@ -125,7 +125,7 @@ class BasePlatform {
       const result = await globalLimiter.execute(async () => {
         return await moduleFunction(
           query,
-          this.createRequestFunction()
+          this.createRequestFunction(req)
         )
       })
 
@@ -152,16 +152,22 @@ class BasePlatform {
     } catch (error) {
       const responseTime = Date.now() - startTime
       const statusCode = 500
+      const upstreamMessage = error?.body?.msg
+      const upstreamStatus = error?.body?.status ?? error?.status
+      const upstreamCode = error?.body?.error_code
+      const errorMessage = error?.message || error?.body?.error_msg ||
+        (typeof upstreamMessage === 'string' ? upstreamMessage : upstreamMessage?.message) ||
+        `Upstream request failed${upstreamStatus !== undefined ? ` (status ${upstreamStatus}` : ''}${upstreamCode !== undefined ? `${upstreamStatus !== undefined ? ', ' : ' ('}code ${upstreamCode}` : ''}${upstreamStatus !== undefined || upstreamCode !== undefined ? ')' : ''}`
 
       // API请求失败日志
       this.logger.request(`/${route}`, responseTime, {
         platform: this.name,
-        error: error.message,
+        error: errorMessage,
         params: query,
         ip: clientIp
       })
 
-      return Result.error(error, statusCode)
+      return Result.error(errorMessage, statusCode)
     }
   }
 
@@ -210,7 +216,7 @@ class BasePlatform {
     }
 
     const files = await fs.readdir(modulePath)
-    const jsFiles = files.filter(file => file.endsWith('.js'))
+    const jsFiles = files.filter(file => file.endsWith('.js') && !file.startsWith('_'))
 
     // 并发加载所有模块 (Promise.all)
     const loadPromises = jsFiles.map(async file => {

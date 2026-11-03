@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
 
-    container_name: music-api
+    container_name: ${CONTAINER_NAME:-music-api}
 
     # 端口映射
     # 格式：宿主机端口:容器端口
@@ -21,6 +21,7 @@ services:
       - HOST=0.0.0.0
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - CORS_ALLOW_ORIGIN=${CORS_ALLOW_ORIGIN:-*}
+      - KUGOU_PLATFORM=${KUGOU_PLATFORM:-default}
 
     # 重启策略
     restart: unless-stopped

@@ -19,8 +19,27 @@ class KuGouPlatform extends BasePlatform {
     this.appConfig = kugouConfig.getAppConf()
     this.apiConfig = kugouConfig.getApiConfig()
     
-    // 设置平台类型（默认或lite）
-    this.platformType = process.env.KUGOU_PLATFORM || 'default' // 'default' 或 'lite'
+    // 酷狗的标准版 / 概念版配置，与统一 API 的 platform=kugou 参数分开。
+    this.platformType = config.platformType || process.env.KUGOU_PLATFORM || process.env.platform || 'default'
+    if (!['default', 'lite'].includes(this.platformType)) {
+      throw new Error('KUGOU_PLATFORM must be "default" or "lite"')
+    }
+    process.env.platform = this.platformType === 'lite' ? 'lite' : ''
+
+    const { calculateMid, cryptoMd5, generateWebGLHash, getGuid, isUUIDv4, randomString } = require('./util/util')
+    const configuredGuid = process.env.KUGOU_API_GUID
+    const envGuid = configuredGuid
+      ? (isUUIDv4(configuredGuid) ? cryptoMd5(configuredGuid) : configuredGuid)
+      : undefined
+    const guid = envGuid ?? getGuid()
+    this.deviceCookies = {
+      KUGOU_API_PLATFORM: process.env.platform,
+      KUGOU_API_MID: calculateMid(envGuid ?? guid),
+      KUGOU_API_GUID: guid,
+      KUGOU_API_DEV: (process.env.KUGOU_API_DEV ?? randomString(10)).toUpperCase(),
+      KUGOU_API_MAC: (process.env.KUGOU_API_MAC ?? '02:00:00:00:00:00').toUpperCase(),
+      KUGOU_API_WEBGL: process.env.KUGOU_API_WEBGL ?? generateWebGLHash()
+    }
     
     this.logger.debug('KuGou platform initialized with config', {
       platformType: this.platformType,
@@ -40,6 +59,28 @@ class KuGouPlatform extends BasePlatform {
     this.logger.debug(`KuGou platform initialized with ${this.modules.size} modules`)
   }
 
+  async callModule(route, req) {
+    const { cookieToJson } = require('./util')
+    const query = { ...req.query, ...req.body }
+    const suppliedCookie = typeof query.cookie === 'string'
+      ? cookieToJson(query.cookie)
+      : query.cookie || {}
+    const cookie = { ...this.deviceCookies, ...(req.cookies || {}), ...suppliedCookie }
+    for (const key of ['token', 'userid', 'dfid']) {
+      if (cookie[key] === undefined && query[key] !== undefined) cookie[key] = query[key]
+    }
+
+    const adaptedReq = Object.create(req)
+    adaptedReq.query = { ...req.query, cookie }
+    adaptedReq.body = { ...req.body, cookie }
+    const result = await super.callModule(route, adaptedReq)
+    const cookiesToSet = Object.entries(this.deviceCookies)
+      .filter(([name]) => !req.cookies?.[name])
+      .map(([name, value]) => `${name}=${value}`)
+    result.cookie = [...cookiesToSet, ...(result.cookie || [])]
+    return result
+  }
+
   /**
    * 模块调用前的验证
    */
@@ -53,15 +94,20 @@ class KuGouPlatform extends BasePlatform {
    * 创建请求函数
    * 返回酷狗平台专用的请求函数
    */
-  createRequestFunction() {
+  createRequestFunction(req) {
     return (options) => {
+      let ip = options.ip || req?.ip || req?.connection?.remoteAddress
+      if (ip?.startsWith('::ffff:')) ip = ip.slice(7)
       // 注入平台配置
       const requestOptions = {
         ...options,
         platformType: this.platformType
       }
 
-      return createRequest(requestOptions)
+      return createRequest({
+        ...requestOptions,
+        ip
+      })
     }
   }
 
@@ -74,7 +120,7 @@ class KuGouPlatform extends BasePlatform {
       throw new Error('Platform type must be "default" or "lite"')
     }
     this.platformType = type
-    process.env.platform = type === 'lite' ? 'lite' : undefined
+    process.env.platform = type === 'lite' ? 'lite' : ''
     this.logger.info(`KuGou platform type set to: ${type}`)
   }
 }

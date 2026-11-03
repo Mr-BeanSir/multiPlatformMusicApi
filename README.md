@@ -172,6 +172,9 @@ LOG_LEVEL=info          # 日志级别: debug, info, warn, error
 
 # CORS 配置
 CORS_ALLOW_ORIGIN=*     # 允许的源，生产环境建议指定具体域名
+
+# 酷狗客户端类型（可选：default 或 lite，默认 default）
+KUGOU_PLATFORM=default
 ```
 
 ### 启动选项

@@ -1,20 +1,20 @@
-const { signKey, appid, cryptoMd5 } = require('../util');
+const { randomString, appid, cryptoMd5 } = require('../util');
 module.exports = (params, useAxios) => {
-  const quality = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'].includes(params.quality)
-    ? `magic_${params?.quality}`
-    : params.quality;
+  // const quality = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'].includes(params.quality)
+  //   ? `magic_${params?.quality}`
+  //   : params.quality;
 
   const vip_token = params?.vip_token || params?.cookie?.vip_token || '';
   const token = params?.token || params?.cookie?.token || '';
   const clienttime_ms = Date.now();
   const userid = Number(params?.userid || params?.cookie?.userid || '0');
-  const dfid = params?.dfid || params?.cookie?.dfid || '-'; // 自定义
+  const dfid = params?.dfid || params?.cookie?.dfid || randomString(24); // 自定义
   const vip_type = params?.cookie?.vip_type || params?.vipType || 0;
 
   const dataMap = {
     area_code: '1',
     behavior: 'play',
-    qualities: ['128', '320', 'flac', 'high', 'multitrack', 'viper_atmos', 'viper_tape', 'viper_clear'],
+    qualities: ['128', '320', 'flac', 'high', 'multitrack', 'viper_atmos', 'viper_tape', 'viper_clear', 'super'],
     'resource': {
       'album_audio_id': params.album_audio_id,
       'collect_list_id': '3',
@@ -25,13 +25,11 @@ module.exports = (params, useAxios) => {
       'type': 'audio',
     },
     token,
-    // tracker_param,
     'tracker_param': {
       all_m: 1,
       auth: '',
       is_free_part: params?.free_part ? 1 : 0,
-      // key: signKey(params.hash, cryptoMd5(dfid), userid, appid),
-      key: cryptoMd5(`${params.hash}185672dd44712f60bb1736df5a377e82${appid}${cryptoMd5(dfid)}${userid}`),
+      key: cryptoMd5(`${params.hash}185672dd44712f60bb1736df5a377e82${appid}${params?.cookie?.KUGOU_API_MID}${userid}`),
       module_id: 0,
       need_climax: 1,
       need_xcdn: 1,
@@ -46,11 +44,13 @@ module.exports = (params, useAxios) => {
   };
 
   return useAxios({
-    baseURL: 'http://tracker.kugou.com',
+    baseURL: 'http://gateway.kugou.com',
     url: '/v6/priv_url',
     method: 'POST',
     data: dataMap,
     encryptType: 'android',
-    cookie: params?.cookie || {},
+    // 同 user_verify.js：走网关 + x-router，与官方客户端抓包一致。
+    headers: { 'x-router': 'tracker.kugou.com' },
+    cookie: Object.assign({}, { dfid }, params?.cookie),
   });
 };

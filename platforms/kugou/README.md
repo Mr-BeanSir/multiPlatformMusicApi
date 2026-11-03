@@ -4,7 +4,7 @@
 
 ## 功能特性
 
-- ✅ 151个API模块全部迁移
+- ✅ API 模块与工具代码同步自 [KuGouMusicApi](https://github.com/MakcRe/KuGouMusicApi)
 - ✅ 完整的加密和签名支持
 - ✅ 支持普通版和精简版（lite）模式
 - ✅ 统一的缓存和并发控制
@@ -131,15 +131,19 @@ Cookie: token=xxx; userid=123456; dfid=xxx
 GET http://localhost:3000/user/playlist?token=xxx&userid=123456&dfid=xxx
 ```
 
+### Auth 聚合版播放地址
+
+先调用 `/register/dev?platform=kugou` 并带上登录 Cookie。服务会返回并通过 `Set-Cookie` 写入 `dfid` 和设备标识，客户端应保留这些 Cookie。若 Cookie 里还没有用户 `auth`，先调用 `/user/verify?platform=kugou`，并保留响应里的 `auth` Cookie。之后调用 `/song/url/auth/merge?hash=歌曲hash&platform=kugou`；此接口会获取歌曲对应的 `auth`、`open_time` 并请求播放地址，无需单独调用 `/song/auth`。
+
 ### 平台类型
 
 酷狗支持两种平台模式：
 - `default` - 普通版（默认）
 - `lite` - 精简版
 
-通过环境变量设置：
+通过 `KUGOU_PLATFORM` 环境变量设置；不配置时使用 `default`：
 ```bash
-export KUGOU_PLATFORM=lite
+KUGOU_PLATFORM=lite
 ```
 
 ## 配置说明

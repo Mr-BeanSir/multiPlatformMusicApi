@@ -4,6 +4,7 @@
  */
 const request = require('supertest')
 const { MultiPlatformServer } = require('../../server')
+const platformFactory = require('../../platforms/PlatformFactory')
 
 describe('API Integration Tests', () => {
   let app
@@ -142,6 +143,27 @@ describe('API Integration Tests', () => {
 
       // 请求应该能够正常处理（即使MUSIC_U可能无效）
       expect(response.body).toHaveProperty('code')
+    })
+
+    test('酷狗注册设备返回的dfid应写入Set-Cookie供后续播放请求复用', async () => {
+      const kugou = platformFactory.getPlatform('kugou')
+      const originalModule = kugou.modules.get('register/dev')
+      kugou.modules.set('register/dev', async query => {
+        expect(query.cookie).toMatchObject({ token: 'test-token', userid: '123' })
+        return { status: 200, body: { status: 1, data: { dfid: 'registered-device' } }, cookie: ['dfid=registered-device'] }
+      })
+
+      try {
+        const response = await request(app)
+          .get('/register/dev')
+          .set('Cookie', 'token=test-token; userid=123')
+          .query({ platform: 'kugou' })
+          .expect(200)
+
+        expect(response.headers['set-cookie']).toContain('dfid=registered-device; Path=/')
+      } finally {
+        kugou.modules.set('register/dev', originalModule)
+      }
     })
   })
 

@@ -146,6 +146,18 @@ describe('BasePlatform', () => {
       expect(result.code).toBe(500)
       expect(result.message).toContain('id is required')
     })
+
+    test('上游 API 错误对象应该保留可读错误信息', async () => {
+      platform.modules.set('upstream-error', async () => Promise.reject({ body: { msg: 'playback unavailable' } }))
+      const result = await platform.callModule('upstream-error', {
+        query: { platform: 'test' },
+        body: {},
+        ip: '127.0.0.1',
+        connection: {}
+      })
+
+      expect(result.message).toBe('playback unavailable')
+    })
   })
 
   describe('缓存功能', () => {

@@ -205,6 +205,15 @@ class MultiPlatformServer {
       const platform = platformFactory.getPlatform(platformName)
       const result = await platform.callModule(route, req)
 
+      if (platformName === 'kugou') {
+        for (const [name, value] of Object.entries(result.headers || {})) {
+          res.set(name, value)
+        }
+        if (Array.isArray(result.cookie) && result.cookie.length > 0) {
+          res.append('Set-Cookie', result.cookie.map(cookie => `${cookie}; Path=/`))
+        }
+      }
+
       // 返回结果
       res.status(result.code).json(result)
 
