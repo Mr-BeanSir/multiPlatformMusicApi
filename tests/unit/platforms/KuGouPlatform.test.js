@@ -31,6 +31,7 @@ describe('KuGouPlatform configuration', () => {
 
     expect(platform.modules.has('search')).toBe(true)
     expect(platform.modules.has('song/url')).toBe(true)
+    expect(platform.modules.has('register/dev')).toBe(true)
     expect(platform.modules.has('/comment')).toBe(false)
   })
 

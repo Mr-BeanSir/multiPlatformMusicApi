@@ -24,6 +24,9 @@
 ### 歌曲相关
 - `song/url` - 获取歌曲播放地址
 - `song/url/new` - 获取歌曲播放地址（新版）
+- `song/auth` - 获取歌曲播放授权
+- `song/url/auth` - 使用授权信息获取歌曲播放地址
+- `song/url/auth/merge` - 聚合获取授权和歌曲播放地址
 - `song/climax` - 歌曲高潮部分
 - `song/ranking` - 歌曲排行
 - `audio` - 音频信息
@@ -91,6 +94,7 @@
 - `ai/recommend` - AI推荐
 
 ### 其他功能
+- `register/dev` - 注册设备并获取 `dfid`
 - `comment/music` - 音乐评论
 - `video/detail` - 视频详情
 - `video/url` - 视频地址
@@ -130,6 +134,17 @@ Cookie: token=xxx; userid=123456; dfid=xxx
 // 通过Query参数
 GET http://localhost:3000/user/playlist?token=xxx&userid=123456&dfid=xxx
 ```
+
+### 注册酷狗设备
+
+部分酷狗播放接口要求先注册设备。调用时使用 `?` 开始查询参数，并保存响应中的 `Set-Cookie`（包括 `dfid` 和设备标识），之后请求酷狗接口时继续携带这些 Cookie：
+
+```bash
+curl -i -c cookies.txt "http://localhost:3000/register/dev?platform=kugou"
+curl -b cookies.txt -c cookies.txt "http://localhost:3000/song/url/new?hash=歌曲hash&platform=kugou"
+```
+
+正确地址是 `/register/dev?platform=kugou`；`&` 用于连接第二个及后续查询参数，不能代替 `?`。
 
 ### Auth 聚合版播放地址
 
