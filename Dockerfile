@@ -1,6 +1,6 @@
 # Multi-stage build for Multi-Platform Music API
 # Stage 1: Dependencies
-FROM node:18-alpine AS dependencies
+FROM node:26.13.0-alpine AS dependencies
 
 # 设置工作目录
 WORKDIR /app
@@ -13,7 +13,7 @@ RUN npm ci --omit=dev && \
     npm cache clean --force
 
 # Stage 2: Production image
-FROM node:18-alpine AS production
+FROM node:26.13.0-alpine AS production
 
 # 设置工作目录
 WORKDIR /app
